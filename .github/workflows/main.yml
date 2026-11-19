@@ -22,16 +22,32 @@ jobs:
           gradle-version: '8.9'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          cmdline-tools-version: '15859902'
-          accept-android-sdk-licenses: true
-          log-accepted-android-sdk-licenses: false
+        uses: android-actions/setup-android@v3
 
       - name: Extract project
         run: |
           mkdir project
           unzip -q IniyaPannaiAndroid_PhoneBuild.zip -d project
+
+      - name: Fix Java and Kotlin versions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("project/app/build.gradle.kts")
+          s = p.read_text()
+          s = s.replace(
+              '    targetSdk = 35',
+              '''    targetSdk = 35
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }'''
+          )
+          p.write_text(s)
+          PY
 
       - name: Build APK
         run: |
