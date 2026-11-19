@@ -21,15 +21,18 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          yes | "$SDKMANAGER" --licenses
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Extract project
         run: |
           mkdir project
           unzip -q IniyaPannaiAndroid_PhoneBuild.zip -d project
 
-      - name: Fix Java and Kotlin versions
+      - name: Set Java and Kotlin target
         run: |
           python3 - <<'PY'
           from pathlib import Path
